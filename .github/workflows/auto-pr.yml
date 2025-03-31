@@ -12,21 +12,28 @@ jobs:
       - name: Checkout do repositório
         uses: actions/checkout@v4
 
-      - name: Verifica se já existe um PR aberto
+      - name: Instalar GitHub CLI
+        run: |
+          sudo apt update
+          sudo apt install gh -y
+
+      - name: Verificar se já existe um PR aberto
         id: check-pr
         run: |
-          PR_EXISTS=$(gh pr list --base master --head ${{ github.ref_name }} --state open --json number --jq 'length')
+          BRANCH_NAME="${GITHUB_REF#refs/heads/}"
+          PR_EXISTS=$(gh pr list --base master --head "$BRANCH_NAME" --state open --json number --jq 'length' || echo 0)
           echo "EXISTING_PR=$PR_EXISTS" >> $GITHUB_ENV
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.PAT_GITHUB }}
 
       - name: Criar Pull Request (se não existir)
         if: env.EXISTING_PR == '0'
         run: |
+          BRANCH_NAME="${GITHUB_REF#refs/heads/}"
           gh pr create \
             --base master \
-            --head ${{ github.ref_name }} \
-            --title "Merge ${{ github.ref_name }} into master" \
-            --body "Pull request automático para unir ${{ github.ref_name }} na master 🚀"
+            --head "$BRANCH_NAME" \
+            --title "Merge $BRANCH_NAME into master" \
+            --body "Pull request automático para unir $BRANCH_NAME na master 🚀"
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.PAT_GITHUB }}
