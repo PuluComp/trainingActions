@@ -1,0 +1,32 @@
+name: Auto Pull Request
+
+on:
+  push:
+    branches:
+      - "feature/*"
+
+jobs:
+  create-pr:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout do repositório
+        uses: actions/checkout@v4
+
+      - name: Verifica se já existe um PR aberto
+        id: check-pr
+        run: |
+          PR_EXISTS=$(gh pr list --base master --head ${{ github.ref_name }} --state open --json number --jq 'length')
+          echo "EXISTING_PR=$PR_EXISTS" >> $GITHUB_ENV
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Criar Pull Request (se não existir)
+        if: env.EXISTING_PR == '0'
+        run: |
+          gh pr create \
+            --base master \
+            --head ${{ github.ref_name }} \
+            --title "Merge ${{ github.ref_name }} into master" \
+            --body "Pull request automático para unir ${{ github.ref_name }} na master 🚀"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
