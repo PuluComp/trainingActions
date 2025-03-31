@@ -1,0 +1,21 @@
+name: Auto Pull Request
+
+on:
+  push:
+    branches:
+      - "feature/*"
+
+jobs:
+  create-pr:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout do repositório
+        uses: actions/checkout@v4
+
+      - name: Verifica se já existe um PR aberto
+        id: check-pr
+        run: |
+          PR_EXISTS=$(gh pr list --base main --head ${{ github.ref_name }} --state open --json number --jq 'length')
+          echo "EXISTING_PR=$PR_EXISTS" >> $GITHUB_ENV
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
