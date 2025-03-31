@@ -24,7 +24,7 @@ jobs:
           PR_EXISTS=$(gh pr list --base master --head "$BRANCH_NAME" --state open --json number --jq 'length' || echo 0)
           echo "EXISTING_PR=$PR_EXISTS" >> $GITHUB_ENV
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.PAT_GITHUB }}
 
       - name: Criar Pull Request (se não existir)
         if: env.EXISTING_PR == '0'
@@ -36,4 +36,4 @@ jobs:
             --title "Merge $BRANCH_NAME into master" \
             --body "Pull request automático para unir $BRANCH_NAME na master 🚀"
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.PAT_GITHUB }}
